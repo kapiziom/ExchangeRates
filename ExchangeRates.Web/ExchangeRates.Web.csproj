@@ -6,4 +6,22 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="10.0.1" />
+      <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ExchangeRates.Common\ExchangeRates.Common.csproj" />
+      <ProjectReference Include="..\ExchangeRates.Data\ExchangeRates.Data.csproj" />
+      <ProjectReference Include="..\ExchangeRates.Providers.Nbp\ExchangeRates.Providers.Nbp.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="BackgroundServices" />
+      <Folder Include="Views\Currency" />
+    </ItemGroup>
+
 </Project>

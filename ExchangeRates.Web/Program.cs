@@ -1,6 +1,17 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient();
+
+builder.Services.AddDbContext<ExchangeRatesContext>(options =>
+{
+    options.UseInMemoryDatabase("InMemory");
+});
+
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IMessageBroker, ExchangeRates.Web.Infrastructure.Messaging.MediatR>();
+
+builder.Services.AddMediatR(typeof(Program).Assembly);
 
 var app = builder.Build();
 
