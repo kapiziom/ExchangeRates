@@ -1,3 +1,8 @@
+using ExchangeRates.Common.Messaging;
+using ExchangeRates.Data;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
