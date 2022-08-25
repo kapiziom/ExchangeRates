@@ -16,7 +16,10 @@ public class CurrencyDetailDto
         Name = entity.Name;
         Provider = entity.Provider;
         EffectiveDate = entity.EffectiveDate;
-        Rates = entity.Rates.Select(o => new CurrencyRateDto(o));
+        
+        Rates = entity.Rates is not null 
+            ? entity.Rates.Select(o => new CurrencyRateDto(o)) 
+            : new List<CurrencyRateDto>();
     }
     
     public int Id { get; set; }
