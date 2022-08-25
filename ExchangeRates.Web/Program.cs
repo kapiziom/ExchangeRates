@@ -1,7 +1,10 @@
 using ExchangeRates.Common.Messaging;
 using ExchangeRates.Data;
 using ExchangeRates.Providers.Nbp;
+using ExchangeRates.Services.Currency.Options;
 using ExchangeRates.Services.Currency.Providers;
+using ExchangeRates.Services.Currency.Queries;
+using ExchangeRates.Web.BackgroundServices;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,13 +17,19 @@ builder.Services.AddDbContext<ExchangeRatesContext>(options =>
     options.UseInMemoryDatabase("InMemory");
 });
 
+builder.Services.AddOptions<CurrencyOptions>().Bind(builder.Configuration.GetRequiredSection("Currencies"));
+
 builder.Services.AddControllersWithViews();
             
 builder.Services.AddScoped<ICurrencyProvider, NbpProvider>();
 
 builder.Services.AddScoped<IMessageBroker, ExchangeRates.Web.Infrastructure.Messaging.MediatR>();
 
-builder.Services.AddMediatR(typeof(Program).Assembly);
+builder.Services.AddMediatR(
+    typeof(Program).Assembly,
+    typeof(GetDefaultCurrency).Assembly);
+
+builder.Services.AddHostedService<CurrencyRatesService>();
 
 var app = builder.Build();
 

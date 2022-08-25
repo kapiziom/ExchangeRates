@@ -14,6 +14,10 @@ public class CurrencyEntity
     
     public string Name { get; set; }
     
+    public string? Provider { get; set; }
+    
+    public DateTime? EffectiveDate { get; set; }
+    
     public ICollection<CurrencyRateEntity> Rates { get; set; }
     
     public ICollection<CurrencyRateEntity> FromRates { get; set; }
