@@ -27,5 +27,9 @@
     <ItemGroup>
         <Folder Include="Views\Currency" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <InternalsVisibleTo Include="ExchangeRates.Tests" />
+    </ItemGroup>
 
 </Project>
