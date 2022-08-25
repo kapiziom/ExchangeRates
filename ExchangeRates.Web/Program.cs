@@ -1,5 +1,7 @@
 using ExchangeRates.Common.Messaging;
 using ExchangeRates.Data;
+using ExchangeRates.Providers.Nbp;
+using ExchangeRates.Services.Currency.Providers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<ExchangeRatesContext>(options =>
 });
 
 builder.Services.AddControllersWithViews();
+            
+builder.Services.AddScoped<ICurrencyProvider, NbpProvider>();
 
 builder.Services.AddScoped<IMessageBroker, ExchangeRates.Web.Infrastructure.Messaging.MediatR>();
 
