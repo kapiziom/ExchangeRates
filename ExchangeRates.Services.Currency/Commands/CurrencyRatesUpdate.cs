@@ -1,3 +1,4 @@
+using ExchangeRates.Common.Caching;
 using ExchangeRates.Common.Messaging;
 using ExchangeRates.Common.Messaging.Handlers;
 using ExchangeRates.Common.Messaging.Messages;
@@ -33,11 +34,13 @@ public class CurrencyRatesUpdateHandler : ICommandHandler<CurrencyRatesUpdate, C
 {
     private readonly ExchangeRatesContext _context;
     private readonly ILogger<CurrencyRatesUpdateHandler> _logger;
+    private readonly ICache _cache;
 
-    public CurrencyRatesUpdateHandler(ExchangeRatesContext context, ILogger<CurrencyRatesUpdateHandler> logger)
+    public CurrencyRatesUpdateHandler(ExchangeRatesContext context, ILogger<CurrencyRatesUpdateHandler> logger, ICache cache)
     {
         _context = context;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<CurrencyDetailDto> Handle(CurrencyRatesUpdate command, CancellationToken ct = default)
@@ -84,6 +87,8 @@ public class CurrencyRatesUpdateHandler : ICommandHandler<CurrencyRatesUpdate, C
         await _context.SaveChangesAsync(ct);
         
         _logger.LogInformation("Rates for {CurrencyCode} updated", currency.Code);
+
+        await _cache.RemoveAsync(nameof(GetDefaultCurrency), ct);
 
         return new CurrencyDetailDto(currency);
     }

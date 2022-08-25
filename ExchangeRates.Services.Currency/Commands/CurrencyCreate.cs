@@ -1,9 +1,11 @@
+using ExchangeRates.Common.Caching;
 using ExchangeRates.Common.Messaging.Handlers;
 using ExchangeRates.Common.Messaging.Messages;
 using ExchangeRates.Data;
 using ExchangeRates.Data.Entities;
 using ExchangeRates.Services.Currency.Dto;
 using ExchangeRates.Services.Currency.Exceptions;
+using ExchangeRates.Services.Currency.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -25,11 +27,13 @@ public class CurrencyCreateHandler : ICommandHandler<CurrencyCreate, CurrencyDet
 {
     private readonly ExchangeRatesContext _context;
     private readonly ILogger<CurrencyCreateHandler> _logger;
+    private readonly ICache _cache;
 
-    public CurrencyCreateHandler(ExchangeRatesContext context, ILogger<CurrencyCreateHandler> logger)
+    public CurrencyCreateHandler(ExchangeRatesContext context, ILogger<CurrencyCreateHandler> logger, ICache cache)
     {
         _context = context;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<CurrencyDetailDto> Handle(CurrencyCreate command, CancellationToken ct = default)
@@ -48,6 +52,8 @@ public class CurrencyCreateHandler : ICommandHandler<CurrencyCreate, CurrencyDet
         await _context.SaveChangesAsync(ct);
         
         _logger.LogInformation("Currency {CurrencyCode} created", command.Code);
+
+        await _cache.RemoveAsync(nameof(GetDefaultCurrency), ct);
             
         return new CurrencyDetailDto(currency);
     }

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using ExchangeRates.Common.Caching;
 using ExchangeRates.Common.Messaging.Handlers;
 using ExchangeRates.Common.Messaging.Messages;
 using ExchangeRates.Data;
@@ -25,21 +27,31 @@ public class GetDefaultCurrencyHandler : IQueryHandler<GetDefaultCurrency, Curre
 {
     private readonly ExchangeRatesContext _context;
     private readonly CurrencyOptions _currencyOptions;
+    private readonly ICache _cache;
 
-    public GetDefaultCurrencyHandler(ExchangeRatesContext context, IOptions<CurrencyOptions> currencyOptions)
+    public GetDefaultCurrencyHandler(ExchangeRatesContext context, IOptions<CurrencyOptions> currencyOptions, ICache cache)
     {
         _context = context;
         _currencyOptions = currencyOptions.Value;
+        _cache = cache;
     }
 
     public async Task<CurrencyDetailDto> Handle(GetDefaultCurrency query, CancellationToken ct = default)
     {
-        var currency = await _context.Currencies.AsNoTracking()
-            .Include(o => o.Rates).ThenInclude(o => o.FromCurrency)
-            .FirstOrDefaultAsync(o => o.Code == _currencyOptions.DefaultCode, ct)
-                ?? throw new CurrencyNotFound(_currencyOptions.DefaultCode);
+        var currencyDetailDto = await _cache.GetAsync<CurrencyDetailDto>(nameof(GetDefaultCurrency), ct);
 
-        var currencyDetailDto = new CurrencyDetailDto(currency);
+        if (currencyDetailDto is null)
+        {
+            var currency = await _context.Currencies.AsNoTracking()
+                .Include(o => o.Rates).ThenInclude(o => o.FromCurrency)
+                .FirstOrDefaultAsync(o => o.Code == _currencyOptions.DefaultCode, ct) 
+                    ?? throw new CurrencyNotFound(_currencyOptions.DefaultCode);
+
+            currencyDetailDto = new CurrencyDetailDto(currency);
+            
+            await _cache.SetAsync(nameof(GetDefaultCurrency), currencyDetailDto, new CacheEntryOptions
+                { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) }, ct);
+        }
 
         if (!string.IsNullOrEmpty(query.SortBy))
         {
@@ -56,6 +68,7 @@ public class GetDefaultCurrencyHandler : IQueryHandler<GetDefaultCurrency, Curre
                 "rate"  => sortOrder is "asc"
                     ? currencyDetailDto.Rates.OrderBy(o => o.Rate)
                     : currencyDetailDto.Rates.OrderByDescending(o => o.Rate),
+                _ => currencyDetailDto.Rates
             };
         }
         

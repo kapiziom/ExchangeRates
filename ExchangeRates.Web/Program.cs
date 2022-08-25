@@ -1,3 +1,4 @@
+using ExchangeRates.Common.Caching;
 using ExchangeRates.Common.Messaging;
 using ExchangeRates.Data;
 using ExchangeRates.Providers.Nbp;
@@ -5,10 +6,15 @@ using ExchangeRates.Services.Currency.Options;
 using ExchangeRates.Services.Currency.Providers;
 using ExchangeRates.Services.Currency.Queries;
 using ExchangeRates.Web.BackgroundServices;
+using ExchangeRates.Web.Infrastructure.Caching;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddScoped<ICache, MemoryCache>();
 
 builder.Services.AddHttpClient();
 
