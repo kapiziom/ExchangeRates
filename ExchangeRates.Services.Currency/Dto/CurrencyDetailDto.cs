@@ -4,6 +4,11 @@ namespace ExchangeRates.Services.Currency.Dto;
 
 public class CurrencyDetailDto
 {
+    public CurrencyDetailDto()
+    {
+        
+    }
+    
     public CurrencyDetailDto(CurrencyEntity entity)
     {
         Id = entity.Id;

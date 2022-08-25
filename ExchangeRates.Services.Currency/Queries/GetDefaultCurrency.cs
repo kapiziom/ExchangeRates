@@ -11,6 +11,14 @@ namespace ExchangeRates.Services.Currency.Queries;
 
 public class GetDefaultCurrency : IQuery<CurrencyDetailDto>
 {
+    public GetDefaultCurrency(string sortBy, string sortOrder)
+    {
+        SortBy = sortBy;
+        SortOrder = sortOrder;
+    }
+    
+    public readonly string SortBy;
+    public readonly string SortOrder;
 }
 
 public class GetDefaultCurrencyHandler : IQueryHandler<GetDefaultCurrency, CurrencyDetailDto>
@@ -24,13 +32,33 @@ public class GetDefaultCurrencyHandler : IQueryHandler<GetDefaultCurrency, Curre
         _currencyOptions = currencyOptions.Value;
     }
 
-    public async Task<CurrencyDetailDto> Handle(GetDefaultCurrency queru, CancellationToken ct = default)
+    public async Task<CurrencyDetailDto> Handle(GetDefaultCurrency query, CancellationToken ct = default)
     {
         var currency = await _context.Currencies.AsNoTracking()
             .Include(o => o.Rates).ThenInclude(o => o.FromCurrency)
             .FirstOrDefaultAsync(o => o.Code == _currencyOptions.DefaultCode, ct)
                 ?? throw new CurrencyNotFound(_currencyOptions.DefaultCode);
 
-        return new CurrencyDetailDto(currency);
+        var currencyDetailDto = new CurrencyDetailDto(currency);
+
+        if (!string.IsNullOrEmpty(query.SortBy))
+        {
+            var sortOrder = string.IsNullOrEmpty(query.SortOrder) ? "asc" : query.SortOrder;
+            
+            currencyDetailDto.Rates = query.SortBy switch
+            {
+                "name" => sortOrder is "asc"
+                    ? currencyDetailDto.Rates.OrderBy(o => o.Name)
+                    : currencyDetailDto.Rates.OrderByDescending(o => o.Name),
+                "code"  => sortOrder is "asc"
+                    ? currencyDetailDto.Rates.OrderBy(o => o.Symbol)
+                    : currencyDetailDto.Rates.OrderByDescending(o => o.Symbol),
+                "rate"  => sortOrder is "asc"
+                    ? currencyDetailDto.Rates.OrderBy(o => o.Rate)
+                    : currencyDetailDto.Rates.OrderByDescending(o => o.Rate),
+            };
+        }
+        
+        return currencyDetailDto;
     }
 }

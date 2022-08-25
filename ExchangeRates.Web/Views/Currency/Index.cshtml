@@ -1,0 +1,80 @@
+@model ExchangeRates.Services.Currency.Dto.CurrencyDetailDto
+
+@{
+    ViewData["Title"] = "Currencies";
+    Layout = "_Layout";
+}
+
+@if (@Model is null)
+{
+    <div class="text-center">
+        <h1 class="display-4 text-danger">Brak danych</h1>
+    </div>
+    
+    return;
+}
+
+<div style="max-width: 1000px; margin-left: auto; margin-right: auto">
+    <div class="text-start">
+        <h1 class="display-6">Kursy średnie wymiany walut</h1>
+    </div>
+    @if (!string.IsNullOrEmpty(@Model.Provider) && @Model.EffectiveDate.HasValue)
+    {
+        <div class="text-left">
+            <p class="h5">Na podstawie aktualnych danych @Model.Provider z dnia @Model.EffectiveDate.Value.ToString("d")</p>
+        </div>
+    }
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">
+                <a class="sort" asp-action="Index" asp-route-sortOrder="@SortOrder("name")" asp-route-sortBy="name">
+                    <span>Nazwa waluty</span> <i class="fa fa-fw fa-sort"></i>
+                </a>
+            </th>
+            <th scope="col">
+                <a class="sort" asp-action="Index" asp-route-sortOrder="@SortOrder("code")" asp-route-sortBy="code">
+                    <span>Symbol</span> <i class="fa fa-fw fa-sort"></i>
+                </a>
+            </th>
+            <th scope="col">
+                <a class="sort" asp-action="Index" asp-route-sortOrder="@SortOrder("rate")" asp-route-sortBy="rate">
+                    <span>Kurs średni</span> <i class="fa fa-fw fa-sort"></i>
+                </a>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in @Model.Rates)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Symbol</td>
+                <td>@item.Rate</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<style scoped>
+.sort {
+    text-decoration: none;
+    color: black;
+}
+</style>
+
+@functions
+{
+    private string SortOrder(string sortBy)
+    {
+        var sortOrder = string.Empty;
+
+        if (ViewData["SortBy"] is not null && sortBy == ViewData["SortBy"]?.ToString())
+            sortOrder = ViewData["SortOrder"] is "asc" ? "desc" : "asc";
+        else
+            sortOrder = "asc";
+        
+        return sortOrder;
+    }
+}
