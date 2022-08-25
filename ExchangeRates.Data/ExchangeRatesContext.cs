@@ -17,8 +17,23 @@ public class ExchangeRatesContext : DbContext
         modelBuilder.Entity<CurrencyEntity>()
             .HasIndex(o => o.Code)
             .IsUnique();
+
+        modelBuilder.Entity<CurrencyEntity>()
+            .Property(o => o.Name)
+            .IsRequired(false);
+
+        modelBuilder.Entity<CurrencyEntity>()
+            .HasMany(o => o.Rates)
+            .WithOne(o => o.BaseCurrency)
+            .HasForeignKey(o => o.BaseCurrencyId);
+
+        modelBuilder.Entity<CurrencyEntity>()
+            .HasMany(o => o.FromRates)
+            .WithOne(o => o.FromCurrency)
+            .HasForeignKey(o => o.FromCurrencyId);
         
         modelBuilder.Entity<CurrencyRateEntity>()
-            .HasKey(o => new { o.BaseId, o.CompareId });
+            .HasIndex(o => new { o.BaseCurrencyId, o.FromCurrencyId })
+            .IsUnique();
     }
 }

@@ -7,11 +7,14 @@ namespace ExchangeRates.Data.Entities;
 public class CurrencyEntity
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     
     public string Code { get; set; }
     
-    public bool IsDefault { get; set; }
+    public string Name { get; set; }
     
-    public virtual ICollection<CurrencyRateEntity> Rates { get; set; }
+    public ICollection<CurrencyRateEntity> Rates { get; set; }
+    
+    public ICollection<CurrencyRateEntity> FromRates { get; set; }
 }
