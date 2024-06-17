@@ -7,15 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExchangeRates.Web.Controllers;
 
-public class CurrencyController : Controller
+public class CurrencyController(IMessageBroker messageBroker) : Controller
 {
-    private readonly IMessageBroker _messageBroker;
-
-    public CurrencyController(IMessageBroker messageBroker)
-    {
-        _messageBroker = messageBroker;
-    }
-
     public async Task<ActionResult<CurrencyDetailDto>> Index(
         [FromQuery] string sortBy, 
         [FromQuery] string sortOrder,
@@ -28,7 +21,7 @@ public class CurrencyController : Controller
 
         try
         {
-            model = await _messageBroker.SendQueryAsync(new GetDefaultCurrency(sortBy, sortOrder), ct);
+            model = await messageBroker.SendQueryAsync(new GetDefaultCurrency(sortBy, sortOrder), ct);
         }
         catch (Exception ex)
         {

@@ -3,12 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExchangeRates.Data;
 
-public class ExchangeRatesContext : DbContext
+public class ExchangeRatesContext(DbContextOptions<ExchangeRatesContext> options) : DbContext(options)
 {
-    public ExchangeRatesContext(DbContextOptions<ExchangeRatesContext> options) : base(options)
-    {
-    }
-    
     public DbSet<CurrencyEntity> Currencies { get; set; }
     public DbSet<CurrencyRateEntity> CurrencyRates { get; set; }
 

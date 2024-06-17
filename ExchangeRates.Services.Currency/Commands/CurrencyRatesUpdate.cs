@@ -13,39 +13,28 @@ using Microsoft.Extensions.Logging;
 
 namespace ExchangeRates.Services.Currency.Commands;
 
-public class CurrencyRatesUpdate : ICommand<CurrencyDetailDto>
+public struct CurrencyRatesUpdate(
+    int id,
+    string provider,
+    DateTime effectiveDate,
+    IEnumerable<CurrencyRate> rates)
+    : ICommand<CurrencyDetailDto>
 {
-    public CurrencyRatesUpdate(int id, string provider, 
-        DateTime effectiveDate, IEnumerable<CurrencyRate> rates)
-    {
-        Id = id;
-        Provider = provider;
-        EffectiveDate = effectiveDate;
-        Rates = rates;
-    }
-
-    public readonly int Id;
-    public readonly string Provider;
-    public readonly DateTime EffectiveDate;
-    public readonly IEnumerable<CurrencyRate> Rates;
+    public readonly int Id = id;
+    public readonly string Provider = provider;
+    public readonly DateTime EffectiveDate = effectiveDate;
+    public readonly IEnumerable<CurrencyRate> Rates = rates;
 }
 
-public class CurrencyRatesUpdateHandler : ICommandHandler<CurrencyRatesUpdate, CurrencyDetailDto>
+public class CurrencyRatesUpdateHandler(
+    ExchangeRatesContext context,
+    ILogger<CurrencyRatesUpdateHandler> logger,
+    ICache cache)
+    : ICommandHandler<CurrencyRatesUpdate, CurrencyDetailDto>
 {
-    private readonly ExchangeRatesContext _context;
-    private readonly ILogger<CurrencyRatesUpdateHandler> _logger;
-    private readonly ICache _cache;
-
-    public CurrencyRatesUpdateHandler(ExchangeRatesContext context, ILogger<CurrencyRatesUpdateHandler> logger, ICache cache)
-    {
-        _context = context;
-        _logger = logger;
-        _cache = cache;
-    }
-
     public async Task<CurrencyDetailDto> Handle(CurrencyRatesUpdate command, CancellationToken ct = default)
     {
-        var currencies = await _context.Currencies
+        var currencies = await context.Currencies
             .Include(o => o.Rates).ThenInclude(o => o.FromCurrency)
             .ToListAsync(ct);
 
@@ -84,11 +73,11 @@ public class CurrencyRatesUpdateHandler : ICommandHandler<CurrencyRatesUpdate, C
         
         currency.Rates = rates;
 
-        await _context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
         
-        _logger.LogInformation("Rates for {CurrencyCode} updated", currency.Code);
+        logger.LogInformation("Rates for {CurrencyCode} updated", currency.Code);
 
-        await _cache.RemoveAsync(nameof(GetDefaultCurrency), ct);
+        await cache.RemoveAsync(nameof(GetDefaultCurrency), ct);
 
         return new CurrencyDetailDto(currency);
     }

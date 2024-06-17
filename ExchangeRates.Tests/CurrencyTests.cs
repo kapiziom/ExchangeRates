@@ -129,19 +129,19 @@ public class CurrencyTests
     {
         var defaultCurrency = await context.Currencies
             .SingleOrDefaultAsync(o => o.Code == currencyOptions.DefaultCode);
-                
-        if (defaultCurrency is null)
+
+        if (defaultCurrency is not null)
+            return defaultCurrency;
+        
+        defaultCurrency = new CurrencyEntity
         {
-            defaultCurrency = new CurrencyEntity
-            {
-                Code = currencyOptions.DefaultCode,
-                Name = currencyOptions.DefaultName
-            };
+            Code = currencyOptions.DefaultCode,
+            Name = currencyOptions.DefaultName
+        };
 
-            context.Add(defaultCurrency);
+        context.Add(defaultCurrency);
 
-            await context.SaveChangesAsync();
-        }
+        await context.SaveChangesAsync();
 
         return defaultCurrency;
     }

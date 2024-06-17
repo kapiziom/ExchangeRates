@@ -5,16 +5,11 @@ using ExchangeRates.Services.Currency.Providers;
 
 namespace ExchangeRates.Providers.Nbp;
 
-public class NbpProvider : ICurrencyProvider
+public class NbpProvider(IHttpClientFactory clientFactory) : ICurrencyProvider
 {
     private const string BaseCurrency = "PLN";
     
-    private readonly HttpClient _httpClient;
-
-    public NbpProvider(IHttpClientFactory clientFactory)
-    {
-        _httpClient = clientFactory.CreateClient();
-    }
+    private readonly HttpClient _httpClient = clientFactory.CreateClient();
 
     public async Task<CurrencyProviderDto> GetRatesAsync(string currencyCode, CancellationToken ct = default)
     {

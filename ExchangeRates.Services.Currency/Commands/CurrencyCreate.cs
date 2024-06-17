@@ -11,34 +11,21 @@ using Microsoft.Extensions.Logging;
 
 namespace ExchangeRates.Services.Currency.Commands;
 
-public class CurrencyCreate : ICommand<CurrencyDetailDto>
+public struct CurrencyCreate(string code, string name) : ICommand<CurrencyDetailDto>
 {
-    public CurrencyCreate(string code, string name)
-    {
-        Code = code;
-        Name = name;
-    }
-
-    public readonly string Code;
-    public readonly string Name;
+    public readonly string Code = code;
+    public readonly string Name = name;
 }
 
-public class CurrencyCreateHandler : ICommandHandler<CurrencyCreate, CurrencyDetailDto>
+public class CurrencyCreateHandler(
+    ExchangeRatesContext context,
+    ILogger<CurrencyCreateHandler> logger,
+    ICache cache)
+    : ICommandHandler<CurrencyCreate, CurrencyDetailDto>
 {
-    private readonly ExchangeRatesContext _context;
-    private readonly ILogger<CurrencyCreateHandler> _logger;
-    private readonly ICache _cache;
-
-    public CurrencyCreateHandler(ExchangeRatesContext context, ILogger<CurrencyCreateHandler> logger, ICache cache)
-    {
-        _context = context;
-        _logger = logger;
-        _cache = cache;
-    }
-
     public async Task<CurrencyDetailDto> Handle(CurrencyCreate command, CancellationToken ct = default)
     {
-        if (await _context.Currencies.AnyAsync(o => o.Code == command.Code, ct))
+        if (await context.Currencies.AnyAsync(o => o.Code == command.Code, ct))
             throw new CurrencyAlreadyExists(command.Code);
 
         var currency = new CurrencyEntity
@@ -47,13 +34,13 @@ public class CurrencyCreateHandler : ICommandHandler<CurrencyCreate, CurrencyDet
             Name = command.Name
         };
 
-        _context.Add(currency);
+        context.Add(currency);
 
-        await _context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(ct);
         
-        _logger.LogInformation("Currency {CurrencyCode} created", command.Code);
+        logger.LogInformation("Currency {CurrencyCode} created", command.Code);
 
-        await _cache.RemoveAsync(nameof(GetDefaultCurrency), ct);
+        await cache.RemoveAsync(nameof(GetDefaultCurrency), ct);
             
         return new CurrencyDetailDto(currency);
     }

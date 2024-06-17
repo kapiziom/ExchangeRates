@@ -9,21 +9,15 @@ using Microsoft.Extensions.Options;
 
 namespace ExchangeRates.Web.BackgroundServices;
 
-public class CurrencyRatesService : BackgroundService
+public class CurrencyRatesService(
+    IServiceScopeFactory scopeFactory,
+    ILogger<CurrencyRatesService> logger,
+    IOptions<CurrencyOptions> currencyOptions)
+    : BackgroundService
 {
     private const int PollIntervalInSeconds = 1800;
 
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<CurrencyRatesService> _logger;
-    private readonly CurrencyOptions _currencyOptions;
-    
-    public CurrencyRatesService(IServiceScopeFactory scopeFactory,
-        ILogger<CurrencyRatesService> logger, IOptions<CurrencyOptions> currencyOptions)
-    {
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-        _currencyOptions = currencyOptions.Value;
-    }
+    private readonly CurrencyOptions _currencyOptions = currencyOptions.Value;
 
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
@@ -31,7 +25,7 @@ public class CurrencyRatesService : BackgroundService
         {
             try
             {
-                using var scope = _scopeFactory.CreateScope();
+                using var scope = scopeFactory.CreateScope();
                 
                 var messageBroker = scope.ServiceProvider.GetRequiredService<IMessageBroker>();
                 
@@ -62,11 +56,11 @@ public class CurrencyRatesService : BackgroundService
 
                 context.ChangeTracker.Clear();
                 
-                _logger.LogInformation("CurrencyRatesService processed the rates");
+                logger.LogInformation("CurrencyRatesService processed the rates");
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to process currencies. {ExceptionMessage}", ex.Message);
+                logger.LogError("Failed to process currencies. {ExceptionMessage}", ex.Message);
             }
             
             await Task.Delay(1000 * PollIntervalInSeconds, ct);
