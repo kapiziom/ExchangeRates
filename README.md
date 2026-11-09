@@ -1,11 +1,11 @@
 # 💱 ExchangeRates
 
-![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet&logoColor=white)
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)
 ![ASP.NET Core MVC](https://img.shields.io/badge/ASP.NET%20Core-MVC-5C2D91)
 ![EF Core](https://img.shields.io/badge/EF%20Core-InMemory-68217A)
 ![Tests](https://img.shields.io/badge/tests-xUnit-green)
 
-A small .NET 8 web app that displays current average exchange rates against the Polish zloty (PLN). Rates are fetched in the background from the public [NBP API](https://api.nbp.pl/) and shown on the main page in a sortable table.
+A small .NET 10 web app that displays current average exchange rates against the Polish zloty (PLN). Rates are fetched in the background from the public [NBP API](https://api.nbp.pl/) and shown on the main page in a sortable table.
 
 The app uses an in-memory database, so there is nothing to install or configure. It is ready to run.
 
@@ -19,7 +19,7 @@ The app uses an in-memory database, so there is nothing to install or configure.
 
 ## 🚀 Getting started
 
-**Requirements:** [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and internet access (to reach the NBP API).
+**Requirements:** [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) and internet access (to reach the NBP API).
 
 ```bash
 git clone https://github.com/kapiziom/ExchangeRates.git
@@ -69,7 +69,7 @@ Tests run against the full application using `WebApplicationFactory` with a sepa
 
 ## 🛠️ Tech stack
 
-- .NET 8, ASP.NET Core MVC
+- .NET 10, ASP.NET Core MVC
 - Entity Framework Core (InMemory provider)
 - MediatR
 - xUnit, Moq

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-.NET 8 ASP.NET Core MVC app that shows currency exchange rates (base currency PLN) fetched in the background from the NBP API (`https://api.nbp.pl/api/exchangerates/tables/a`). It uses an EF Core **InMemory** database, so there is no DB setup or migrations; data is lost on restart and is repopulated by the background service.
+.NET 10 ASP.NET Core MVC app that shows currency exchange rates (base currency PLN) fetched in the background from the NBP API (`https://api.nbp.pl/api/exchangerates/tables/a`). It uses an EF Core **InMemory** database, so there is no DB setup or migrations; data is lost on restart and is repopulated by the background service.
 
 ## Commands
 
@@ -31,7 +31,7 @@ Layered solution; dependencies point inward: `Web` → `Services.Currency`, `Pro
 
 ### Request / data flow
 
-- Callers never use MediatR directly; they go through `IMessageBroker.SendCommandAsync/SendQueryAsync`. MediatR handler registration scans both the Web assembly and the `Services.Currency` assembly (`Program.cs`), so a new handler in either is picked up automatically.
+- Callers never use MediatR directly; they go through `IMessageBroker.SendCommandAsync/SendQueryAsync`. MediatR handler registration (pinned to 12.x, the last free-licensed line; v13+ needs a license key) scans both the Web assembly and the `Services.Currency` assembly (`Program.cs`), so a new handler in either is picked up automatically.
 - **Write path**: `CurrencyRatesService` (hosted `BackgroundService`, polls every 1800s) ensures the default currency exists (`Currencies:DefaultCode` / `DefaultName` in `appsettings.json`, currently PLN), calls `ICurrencyProvider.GetRatesAsync`, then sends `CurrencyRatesUpdate`. Its handler upserts rates, then **invalidates the cache key `nameof(GetDefaultCurrency)`**.
 - **Read path**: `CurrencyController.Index` → `GetDefaultCurrency` query. The handler caches the `CurrencyDetailDto` for 1 hour under that same key and applies sorting (`sortBy`: name/code/rate, `sortOrder`: asc/desc) *after* the cache lookup, mutating the cached DTO's `Rates`. Any new write that changes default-currency data must also remove that cache key.
 - The background service uses its own DI scope per iteration (scoped services like the DbContext and provider) and swallows/logs all exceptions so the loop keeps running.

@@ -31,9 +31,9 @@ builder.Services.AddScoped<ICurrencyProvider, NbpProvider>();
 
 builder.Services.AddScoped<IMessageBroker, ExchangeRates.Web.Infrastructure.Messaging.MediatR>();
 
-builder.Services.AddMediatR(
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Program).Assembly,
-    typeof(GetDefaultCurrency).Assembly);
+    typeof(GetDefaultCurrency).Assembly));
 
 builder.Services.AddHostedService<CurrencyRatesService>();
 
